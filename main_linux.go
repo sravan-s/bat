@@ -51,6 +51,11 @@ func usage() {
 	fmt.Fprintf(os.Stdout, help, t.Format("02 January 2006"))
 }
 
+func convertStringToNumber(s string) (float64, error) {
+	s = strings.TrimSpace(s)
+	return strconv.ParseFloat(s, 2)
+}
+
 func main() {
 	if len(os.Args) == 1 {
 		usage()
@@ -81,6 +86,18 @@ func main() {
 		usage()
 	case "-v", "--version":
 		fmt.Fprintf(os.Stdout, version, tag, time.Now().Year())
+	case "health":
+		energyFull, err := convertStringToNumber(mustRead("energy_full"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		energyFullDesign, err := convertStringToNumber(mustRead("energy_full_design"))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var health = (energyFull / energyFullDesign) * 100
+		fmt.Fprintf(os.Stdout, "Battery health of %s: %f", first, health)
 	case "capacity", "status":
 		fmt.Fprint(os.Stdout, mustRead(option))
 	case "persist":
